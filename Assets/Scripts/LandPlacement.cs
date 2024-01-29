@@ -115,6 +115,57 @@ public class LandPlacement : MonoBehaviour
 
     // Update is called once per frame
 
+    public UnityEngine.UI.InputField XMLSaveControl;
+
+    public void ToggleClip()
+    {
+        if (XMLSaveControl.gameObject.activeSelf == false)
+        {
+            XMLSaveControl.gameObject.SetActive(true);
+            string skin = "";
+            SkinName SN = null;
+            StringBuilder SB = new StringBuilder("");
+            SB.Append("<level>\r\n");
+            GameObject[] Ground = GameObject.FindGameObjectsWithTag("Terrain");
+            foreach (GameObject G in Ground)
+            {
+                float y = 1;
+                try
+                {
+                    Bounds b = G.GetComponent<MeshRenderer>().bounds;
+                    Debug.Log("Object Bounds: " + b.size.y);
+                    y = (int)(b.size.y / 0.25f);
+                }
+                catch
+                {
+
+                }
+                skin = G.name;
+                SN = G.GetComponent<SkinName>();
+                if (SN != null)
+                {
+                    skin = SN.Name;
+                }
+                SB.Append("  <chunk type=\"" + G.name + "\" x=\"" + G.transform.position.x + "\" y=\"" + G.transform.position.z + "\" height=\"" + y + "\" skin=\"" + skin + "\" floor=\"0\"/>\r\n");
+            }
+
+            Ground = GameObject.FindGameObjectsWithTag("Decoration");
+            foreach (GameObject G in Ground)
+            {
+                SB.Append("  <decoration type=\"" + G.name + "\" x=\"" + G.transform.position.x + "\" y=\"" + G.transform.position.z + "\" z=\"" + G.transform.position.y + "\" skin=\"" + G.name + "\" />\r\n");
+            }
+            SB.Append("</level>");
+
+            XMLSaveControl.text = SB.ToString();
+        }
+        else
+        {
+            string LevelText = XMLSaveControl.text;
+            LoadGame(LevelText,true);
+            XMLSaveControl.gameObject.SetActive(false);
+        }
+    }
+
     public void SaveGame()
     {
         if (GameName.text.Trim() != "")
