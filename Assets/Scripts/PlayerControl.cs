@@ -102,6 +102,12 @@ public class PlayerControl : MonoBehaviour
             {
                 GL.PlayMode();
             }
+
+            EditorOnly[] Objects = GameObject.FindObjectsOfType<EditorOnly>();
+            foreach (EditorOnly G in Objects)
+            {
+                G.SendMessage("StartPlayMode");
+            }
             EditorScene.Instance.Restart();
         }
         else
@@ -148,6 +154,12 @@ public class PlayerControl : MonoBehaviour
             foreach (GoLive GL in LiveElements)
             {
                 GL.EditMode();
+            }
+
+            EditorOnly[] Objects = GameObject.FindObjectsOfType<EditorOnly>();
+            foreach (EditorOnly G in Objects)
+            {
+                G.SendMessage("StartEditMode");
             }
         }
     }

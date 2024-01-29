@@ -35,11 +35,11 @@ public class PopupUI : MonoBehaviour
 
     public void Delete()
     {
-        if (Title.text != "StartSpot")
-        {
+        //if (Title.text != "StartSpot")
+        //{
             GameObject.Destroy(Targ);
             Close();
-        }
+        //}
     }
 
     public void UpdateSkinTexture()

@@ -7,6 +7,7 @@ TagManager:
   - Terrain
   - Decoration
   - Damaging
+  - Prop
   layers:
   - Default
   - TransparentFX

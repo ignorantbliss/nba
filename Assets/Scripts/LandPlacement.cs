@@ -263,7 +263,7 @@ public class LandPlacement : MonoBehaviour
         }
         else
         {
-            SaveGameUI.SetActive(false);
+            //SaveGameUI.SetActive(false);
         }
     }
 
@@ -1048,7 +1048,7 @@ public class LandPlacement : MonoBehaviour
     }
     
     void SetSize(GameObject G, int Sz)
-    {
+    {        
         if (Meshes.Count == 0)
         {
             Meshes.Add(1, G.GetComponent<MeshFilter>().sharedMesh);
@@ -1084,7 +1084,7 @@ public class LandPlacement : MonoBehaviour
                 }
             }
 
-            Debug.Log("Old Mesh Has " + BaseMesh.subMeshCount + " sub meshes!");
+            //Debug.Log("Old Mesh Has " + BaseMesh.subMeshCount + " sub meshes!");
 
             M.vertices = Verts;
             M.subMeshCount = BaseMesh.subMeshCount;
@@ -1092,12 +1092,12 @@ public class LandPlacement : MonoBehaviour
             {
                 int[] Tris = BaseMesh.GetTriangles(x);
                 M.SetTriangles(Tris, x);
-                Debug.Log("Setting Sub-Mesh " + x);
+                //Debug.Log("Setting Sub-Mesh " + x);
             }
 
             M.uv = UVs;
 
-            Debug.Log("New Mesh Has " + M.subMeshCount + " sub meshes!");
+            //Debug.Log("New Mesh Has " + M.subMeshCount + " sub meshes!");
 
             M.RecalculateBounds();
             M.RecalculateNormals();
@@ -1110,10 +1110,11 @@ public class LandPlacement : MonoBehaviour
             BC.center = B.center;
             BC.size = B.size;
         }
+        AdjustProps(G);
     }
 
     void Enlarge(GameObject G)
-    {
+    {        
         if (Meshes.Count == 0)
         {
             Meshes.Add(1, G.GetComponent<MeshFilter>().sharedMesh);
@@ -1175,6 +1176,8 @@ public class LandPlacement : MonoBehaviour
             BC.center = B.center;
             BC.size =B.size;
         }
+
+        AdjustProps(G);
     }
 
     void Shrink(GameObject G)
@@ -1188,6 +1191,28 @@ public class LandPlacement : MonoBehaviour
             BoxCollider BC = G.GetComponent<BoxCollider>();
             BC.center = B.center;
             BC.size = B.size;
+        }
+
+        AdjustProps(G);
+    }
+
+    void AdjustProps(GameObject G)
+    {
+        //Debug.Log("Adjusting Props On This Object");
+        //Search all gameobjects around this area...
+        GameObject[] Gs = GameObject.FindGameObjectsWithTag("Prop");
+        BoxCollider BC = G.GetComponent<BoxCollider>();
+        Vector3 refpos = new Vector3(G.transform.position.x, 0,G.transform.position.z);
+
+        Debug.Log(BC.center + " / " + BC.size);
+        foreach (GameObject Gx in Gs)
+        {
+            if ((new Vector3(Gx.transform.position.x,0,Gx.transform.position.z) - refpos).magnitude < 0.5f)
+            {
+                //Apply new height...                
+                Gx.transform.position = new Vector3(Gx.transform.position.x,BC.center.z + (BC.size.z / 2),Gx.transform.position.z);
+                //Debug.Log("Tweaking Position Of " + Gx.name + " to " + Gx.transform.position);
+            }
         }
     }
 
