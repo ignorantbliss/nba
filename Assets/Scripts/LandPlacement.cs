@@ -122,41 +122,7 @@ public class LandPlacement : MonoBehaviour
         if (XMLSaveControl.gameObject.activeSelf == false)
         {
             XMLSaveControl.gameObject.SetActive(true);
-            string skin = "";
-            SkinName SN = null;
-            StringBuilder SB = new StringBuilder("");
-            SB.Append("<level>\r\n");
-            GameObject[] Ground = GameObject.FindGameObjectsWithTag("Terrain");
-            foreach (GameObject G in Ground)
-            {
-                float y = 1;
-                try
-                {
-                    Bounds b = G.GetComponent<MeshRenderer>().bounds;
-                    Debug.Log("Object Bounds: " + b.size.y);
-                    y = (int)(b.size.y / 0.25f);
-                }
-                catch
-                {
-
-                }
-                skin = G.name;
-                SN = G.GetComponent<SkinName>();
-                if (SN != null)
-                {
-                    skin = SN.Name;
-                }
-                SB.Append("  <chunk type=\"" + G.name + "\" x=\"" + G.transform.position.x + "\" y=\"" + G.transform.position.z + "\" height=\"" + y + "\" skin=\"" + skin + "\" floor=\"0\"/>\r\n");
-            }
-
-            Ground = GameObject.FindGameObjectsWithTag("Decoration");
-            foreach (GameObject G in Ground)
-            {
-                SB.Append("  <decoration type=\"" + G.name + "\" x=\"" + G.transform.position.x + "\" y=\"" + G.transform.position.z + "\" z=\"" + G.transform.position.y + "\" skin=\"" + G.name + "\" />\r\n");
-            }
-            SB.Append("</level>");
-
-            XMLSaveControl.text = SB.ToString();
+            XMLSaveControl.text = GetSaveContent();
         }
         else
         {
@@ -166,43 +132,74 @@ public class LandPlacement : MonoBehaviour
         }
     }
 
+    public string GetSaveContent()
+    {
+        string skin = "";
+        SkinName SN = null;
+        StringBuilder SB = new StringBuilder("");
+        SB.Append("<level>\r\n");
+        GameObject[] Ground = GameObject.FindGameObjectsWithTag("Terrain");
+        foreach (GameObject G in Ground)
+        {
+            float y = 1;
+            try
+            {
+                Bounds b = G.GetComponent<MeshRenderer>().bounds;
+                Debug.Log("Object Bounds: " + b.size.y);
+                y = (int)(b.size.y / 0.25f);
+            }
+            catch
+            {
+
+            }
+            skin = G.name;
+            SN = G.GetComponent<SkinName>();
+            if (SN != null)
+            {
+                skin = SN.Name;
+            }
+            SB.Append("  <chunk type=\"" + G.name + "\" x=\"" + G.transform.position.x + "\" y=\"" + G.transform.position.z + "\" height=\"" + y + "\" skin=\"" + skin + "\" floor=\"0\"/>\r\n");
+        }
+
+        Ground = GameObject.FindGameObjectsWithTag("Decoration");
+        foreach (GameObject G in Ground)
+        {
+            SB.Append("  <decoration type=\"" + G.name + "\" x=\"" + G.transform.position.x + "\" y=\"" + G.transform.position.z + "\" z=\"" + G.transform.position.y + "\" skin=\"" + G.name + "\" />\r\n");
+        }
+        RuntimeNodeEditor.GraphData GD = ObjectNodeEditor.NGraph.Export();
+        foreach (RuntimeNodeEditor.NodeData ND in GD.nodes)
+        {
+            SB.Append("  <node type=\"" + ND.path + "\" x=\"" + ND.posX + "\" y=\"" + ND.posY + "\" id=\"" + ND.id + "\">");
+            foreach (RuntimeNodeEditor.SerializedValue NV in ND.values)
+            {
+                SB.Append("    <value name=\"" + NV.key + "\" value=\"" + NV.value + "\"/>");
+            }
+            foreach (string S in ND.inputSocketIds)
+            {
+                SB.Append("    <input>" + S + "</input>");
+            }
+            foreach (string S in ND.outputSocketIds)
+            {
+                SB.Append("    <output>" + S + "</output>");
+            }
+            SB.Append("  </node>");
+        }
+
+        foreach (RuntimeNodeEditor.ConnectionData CD in GD.connections)
+        {
+            SB.Append("   <link from=\"" + CD.inputSocketId + "\" to=\"" + CD.outputSocketId + "\"/>");
+        }
+        SB.Append("</level>");
+
+        return SB.ToString();
+    }
+
     public void SaveGame()
     {
         if (GameName.text.Trim() != "")
         {
-            string skin = "";
-            SkinName SN = null;
-            StringBuilder SB = new StringBuilder("");
-            SB.Append("<level>\r\n");
-            GameObject[] Ground = GameObject.FindGameObjectsWithTag("Terrain");
-            foreach (GameObject G in Ground)
-            {
-                float y = 1;
-                try
-                {
-                    Bounds b = G.GetComponent<MeshRenderer>().bounds;
-                    Debug.Log("Object Bounds: " + b.size.y);
-                    y = (int)(b.size.y / 0.25f);
-                }
-                catch
-                {
-
-                }
-                skin = G.name;
-                SN = G.GetComponent<SkinName>();
-                if (SN != null)
-                {
-                    skin = SN.Name;
-                }
-                SB.Append("  <chunk type=\"" + G.name + "\" x=\"" + G.transform.position.x + "\" y=\"" + G.transform.position.z + "\" height=\"" + y + "\" skin=\"" + skin + "\" floor=\"0\"/>\r\n");
-            }
-
-            Ground = GameObject.FindGameObjectsWithTag("Decoration");
-            foreach (GameObject G in Ground)
-            {
-                SB.Append("  <decoration type=\"" + G.name + "\" x=\"" + G.transform.position.x + "\" y=\"" + G.transform.position.z + "\" z=\"" + G.transform.position.y + "\" skin=\"" + G.name + "\" />\r\n");
-            }
-            SB.Append("</level>");
+            string content = GetSaveContent();
+            
 
 #if !UNITY_WEBGL
 
@@ -210,14 +207,14 @@ public class LandPlacement : MonoBehaviour
         filename = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments) + "\\NoisyBigAdventure\\" + GameName.text + ".xml";
 
         TextWriter Wrtr = (StreamWriter)File.CreateText(filename);
-        Wrtr.Write(SB.ToString());
+        Wrtr.Write(content);
         Wrtr.Flush();
         Wrtr.Close();
 #else
 
 
 #endif
-            ToSaveContent = SB.ToString();
+            ToSaveContent = content;
             ToSaveName = GameName.text.ToString();
 
             StartCoroutine(SaveToServer());
@@ -255,6 +252,7 @@ public class LandPlacement : MonoBehaviour
     {
         if (SaveGameUI.activeSelf == false)
         {
+            XMLSaveControl.text = GetSaveContent();
             foreach (Transform T in SaveGameUI.transform)
             {
                 T.gameObject.SetActive(true);
