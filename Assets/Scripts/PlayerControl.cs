@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerControl : MonoBehaviour
 {
@@ -220,7 +221,13 @@ public class PlayerControl : MonoBehaviour
         
         
         float Horiz = Input.GetAxis("Horizontal");
-        float Vert = Input.GetAxis("Vertical");        
+        float Vert = Input.GetAxis("Vertical");
+
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            Horiz = 0;
+            Vert = 0;            
+        }
 
         //CHEATS
         if (Input.GetKeyDown(KeyCode.F))
@@ -451,6 +458,7 @@ public class PlayerControl : MonoBehaviour
             //Debug.Log("Nothing!");
         }
         Player.transform.position += Tweaker * Time.deltaTime;
+
         //Player.transform.position += new Vector3(Horiz * MaxSpeed, UpSpeed, Vert * MaxSpeed) * Time.deltaTime;
 
 
