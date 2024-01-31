@@ -11,6 +11,7 @@ public class PopupUI : MonoBehaviour
     public ShaderSets MaterialListing;
     public OpenHelp Help;
 
+    public UnityEngine.UI.Dropdown SkinDrop = null;
     public static GameObject SelectedObject = null;
 
     List<GameObject> SkinButtons = null;
@@ -20,12 +21,46 @@ public class PopupUI : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    public void ApplySkin(int i)
+    {
+        string NewName = null;
+        int indx = -1;
+        ShaderSets.ShaderSet[] Sets = MaterialListing.GetMaterialsFor(Targ.name);
+
+        MeshRenderer MR = Targ.GetComponent<MeshRenderer>();
+        //Material M = MR.sharedMaterial;
+
+        Debug.Log("Applying Different Skin...");
+
+        Material[] Mats = new Material[MR.sharedMaterials.Length];
+
+        foreach (ShaderSets.ShaderSet S in Sets)
+        {
+            if (S.ApplyToNo == 0)
+            {
+                indx++;
+                if (indx == i)
+                {
+                    NewName = S.MaterialName;
+                }                
+            }
+
+            if (NewName == S.MaterialName)
+            {
+                Mats[S.ApplyToNo] = S.M;// MR.sharedMaterials[S.ApplyToNo] = S.M;
+                //Debug.Log("Applying Skin " + S.MaterialName + " - " + S.M.name + " To " + Targ.name + " Layer " + S.ApplyToNo);
+            }
+        }
+
+        MR.sharedMaterials = Mats;
+    }
+
     public void Open(GameObject Target)
     {
         Targ = Target;
         gameObject.SetActive(true);
 
-        UpdateSkinTexture();
+        UpdateSkinTexture();        
 
         Title.text = Targ.name;
 
@@ -48,13 +83,24 @@ public class PopupUI : MonoBehaviour
 
         if (Sets.Length == 0)
         {
-            SkinButton.gameObject.SetActive(false);
+            SkinDrop.gameObject.SetActive(false);
+            //SkinButton.gameObject.SetActive(false);
             return;
         }
         else
         {
-            SkinButton.gameObject.SetActive(true);
+            SkinDrop.gameObject.SetActive(true);
+            //SkinButton.gameObject.SetActive(true);
         }
+
+        SkinDrop.ClearOptions();
+        List<string> OptionList = new List<string>();
+        foreach (ShaderSets.ShaderSet S in Sets)
+        {
+            if (S.ApplyToNo == 0)
+                OptionList.Add(S.MaterialName);
+        }
+        SkinDrop.AddOptions(OptionList);
 
         MeshRenderer MR = Targ.GetComponent<MeshRenderer>();
         Material M = MR.sharedMaterial;
@@ -96,7 +142,7 @@ public class PopupUI : MonoBehaviour
 
     public void OpenSkinList()
     {
-        if (SkinButtons != null)
+        /*if (SkinButtons != null)
         {
             foreach(GameObject G in SkinButtons)
             {
@@ -163,7 +209,7 @@ public class PopupUI : MonoBehaviour
                     Txt.gameObject.SetActive(true);
                 }
             }            
-        }
+        }*/
 
     }
 }
