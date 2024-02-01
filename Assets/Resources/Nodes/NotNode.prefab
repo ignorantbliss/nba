@@ -354,7 +354,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   headerText: {fileID: 4050287918490397133}
-  draggableBody: {fileID: 6290086045451085351}
+  draggableBody: {fileID: 6290086046137204443}
   inSocket: {fileID: 6467011368223948023}
   outSocket: {fileID: 8229098953127615842}
 --- !u!1 &8966638480194106887
