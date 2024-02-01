@@ -153,6 +153,36 @@ namespace RuntimeNodeEditor
             System.IO.File.WriteAllText(path, ExportJson());
         }
 
+        public void Import(GraphData graph)
+        {            
+            foreach (var data in graph.nodes)
+            {
+                LoadNode(data);
+            }
+
+            foreach (var node in nodes)
+            {
+                var nodeData = graph.nodes.FirstOrDefault(data => data.id == node.ID);
+
+                for (int i = 0; i < nodeData.inputSocketIds.Length; i++)
+                {
+                    node.Inputs[i].socketId = nodeData.inputSocketIds[i];
+                }
+
+                for (int i = 0; i < nodeData.outputSocketIds.Length; i++)
+                {
+                    node.Outputs[i].socketId = nodeData.outputSocketIds[i];
+                }
+            }
+
+            foreach (var data in graph.connections)
+            {
+                LoadConn(data);
+            }
+
+            drawer.UpdateDraw();
+        }
+
         public void LoadFile(string path)
         {
             if (System.IO.File.Exists(path))

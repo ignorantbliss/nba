@@ -23,6 +23,6 @@ public class Bubbling : MonoBehaviour
     // Update is called once per frame
     void Update()
     {        
-        R.materials[MaterialIndex].mainTextureOffset = SharedFloat.Value * Direction;
+        R.sharedMaterials[MaterialIndex].mainTextureOffset = SharedFloat.Value * Direction;
     }
 }

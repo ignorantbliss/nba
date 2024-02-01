@@ -161,10 +161,10 @@ public class LandPlacement : MonoBehaviour
             SB.Append("  <chunk type=\"" + G.name + "\" x=\"" + G.transform.position.x + "\" y=\"" + G.transform.position.z + "\" height=\"" + y + "\" skin=\"" + skin + "\" floor=\"0\"/>\r\n");
         }
 
-        Ground = GameObject.FindGameObjectsWithTag("Decoration");
+        Ground = GameObject.FindGameObjectsWithTag("Prop");
         foreach (GameObject G in Ground)
         {
-            SB.Append("  <decoration type=\"" + G.name + "\" x=\"" + G.transform.position.x + "\" y=\"" + G.transform.position.z + "\" z=\"" + G.transform.position.y + "\" skin=\"" + G.name + "\" />\r\n");
+            SB.Append("  <prop type=\"" + G.name + "\" x=\"" + G.transform.position.x + "\" y=\"" + G.transform.position.z + "\" z=\"" + G.transform.position.y + "\" skin=\"" + G.name + "\" />\r\n");
         }
         RuntimeNodeEditor.GraphData GD = ObjectNodeEditor.NGraph.Export();
         foreach (RuntimeNodeEditor.NodeData ND in GD.nodes)
@@ -468,6 +468,74 @@ public class LandPlacement : MonoBehaviour
 
             Draft = null;
         }
+
+        Chunks = Doc.GetElementsByTagName("prop");
+
+        RuntimeNodeEditor.GraphData GD = new RuntimeNodeEditor.GraphData();
+
+        List<RuntimeNodeEditor.NodeData> Nodes = new List<RuntimeNodeEditor.NodeData>();
+
+        Chunks = Doc.GetElementsByTagName("node");        
+        foreach (XmlNode N in Chunks)
+        {
+            RuntimeNodeEditor.NodeData ND = new RuntimeNodeEditor.NodeData();
+            ND.path = N.Attributes["type"].Value;
+            ND.posX = float.Parse(N.Attributes["x"].Value);
+            ND.posY = float.Parse(N.Attributes["y"].Value);
+            ND.id = N.Attributes["id"].Value;
+
+            List<string> Inputs = new List<string>();
+            List<string> Outputs = new List<string>();
+
+            Dictionary<string, string> Values = new Dictionary<string, string>();
+
+            foreach (XmlNode CN in N.ChildNodes)
+            {
+                if (CN.Name == "value")
+                {
+                    Values[CN.Attributes["name"].Value] = CN.Attributes["vakye"].Value;                    
+                }
+                if (CN.Name == "input")
+                {
+                    Inputs.Add(CN.InnerText);
+                }
+                if (CN.Name == "output")
+                {
+                    Outputs.Add(CN.InnerText);
+                }
+            }
+            ND.inputSocketIds = Inputs.ToArray();
+            ND.outputSocketIds = Outputs.ToArray();
+
+            ND.values = new RuntimeNodeEditor.SerializedValue[Values.Count];
+            int indx = 0;
+            foreach (KeyValuePair<string, string> KV in Values)
+            {
+                RuntimeNodeEditor.SerializedValue SV = new RuntimeNodeEditor.SerializedValue();
+                SV.key = KV.Key;
+                SV.value = KV.Value;
+                ND.values[indx] = SV;
+                indx++;
+            }
+
+            Nodes.Add(ND);
+        }
+
+        List<RuntimeNodeEditor.ConnectionData> Links = new List<RuntimeNodeEditor.ConnectionData>();
+
+        Chunks = Doc.GetElementsByTagName("link");
+        foreach (XmlNode N in Chunks)
+        {
+            RuntimeNodeEditor.ConnectionData CD = new RuntimeNodeEditor.ConnectionData();
+            CD.inputSocketId = N.Attributes["from"].Value;
+            CD.outputSocketId = N.Attributes["to"].Value;
+            Links.Add(CD);
+        }
+        GD.connections = Links.ToArray();
+        GD.nodes = Nodes.ToArray();
+
+        ObjectNodeEditor.NGraph.Import(GD);
+
     }
 
     public Material SelectionMaterial;
